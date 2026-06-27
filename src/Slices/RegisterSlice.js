@@ -1,58 +1,76 @@
-import { createSlice } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createAsyncThunk,
+  isPending,
+  isRejected,
+} from "@reduxjs/toolkit";
+import BaseURL from "../API/BaseURL";
+
+export const LoginAPI = createAsyncThunk("Login/Data", async (LoginData) => {
+  const response = await BaseURL.post("auth/login", LoginData);
+  return response.data;
+});
+
+export const SignUpAPI = createAsyncThunk("SignUp/Data", async (SignUpData) => {
+  const response = await BaseURL.post("auth/signup", SignUpData);
+  return response.data;
+});
+
+export const RecoverAPI = createAsyncThunk("Recover/Data", async (RecoverData) => {
+  const response = await BaseURL.post("auth/recover", RecoverData);
+  return response.data;
+});
 
 export const Data = createSlice({
   name: "RegisterData",
   initialState: {
-    buyerSignUpData: {},
-    sellerSignUpData: {},
-    login: {},
     isNewMember: false,
     hasForgetPassword: false,
-    recoverData: {},
     Buyer: true,
+    agreeToTerms: false,
+    isLoading: false,
+    error: null,
+    token: null,
   },
   reducers: {
-    member: (state, action) => {
+    member: (state) => {
       state.isNewMember = !state.isNewMember;
-      state.login = {};
-      state.buyerSignUpData = {};
-      state.sellerSignUpData = {};
     },
-    Buyer: (state, action) => {
+    Buyer: (state) => {
       state.Buyer = !state.Buyer;
-      state.buyerSignUpData ={}
-      state.sellerSignUpData ={}
+      state.agreeToTerms = false;
     },
-        signUp: (state, action) => {
-      const [label, value] = action.payload;
-      if (state.isNewMember) {
-        if (state.Buyer) {
-          state.buyerSignUpData[label] = value;
-        } else {
-          state.sellerSignUpData[label] = value;
-        }
-      }
+    agreeToTerms: (state) => {
+      state.agreeToTerms = !state.agreeToTerms;
     },
-    login: (state, action) => {
-      const [label, value] = action.payload;
-      if (state.isNewMember !== true && state.hasForgetPassword === false) {
-        state.login[label] = value;
-      }
-    },
-    forgetPassword: (state, action) => {
+    forgetPassword: (state) => {
       state.hasForgetPassword = !state.hasForgetPassword;
-      state.login = {};
-      state.recoverData = {};
     },
-    recoverAccount: (state, action) => {
-      const [label, value] = action.payload;
-      if (state.hasForgetPassword) {
-        state.recoverData[label] = value;
-      }
-    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addMatcher(isPending(LoginAPI, SignUpAPI, RecoverAPI), (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addMatcher(isRejected(LoginAPI, SignUpAPI, RecoverAPI), (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message;
+      })
+      .addCase(LoginAPI.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.token = action.payload.token;
+      })
+      .addCase(SignUpAPI.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.token = action.payload.token;
+      })
+      .addCase(RecoverAPI.fulfilled, (state) => {
+        state.isLoading = false;
+        state.hasForgetPassword = false; 
+      });
   },
 });
 
-export const { member, signUp, login, forgetPassword, recoverAccount , Buyer } =
-  Data.actions;
+export const { member, Buyer, agreeToTerms, forgetPassword } = Data.actions;
 export default Data.reducer;

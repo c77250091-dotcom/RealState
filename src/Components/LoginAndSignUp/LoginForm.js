@@ -8,12 +8,7 @@ import RegisterButton from "./RegisterButton";
 import Header from "./Header";
 import { useDispatch, useSelector } from "react-redux";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import {
-  forgetPassword,
-  login,
-  recoverAccount,
-} from "../../Slices/RegisterSlice";
-import { useCallback } from "react";
+import { forgetPassword , RecoverAPI , LoginAPI } from "../../Slices/RegisterSlice";
 
 const LoginInputs = [
   { id: 1, name: "email", placeholder: "Email", type: "email" },
@@ -29,14 +24,26 @@ export default function LoginForm() {
   const state = useSelector((state) => state.registerData);
   const dispatch = useDispatch();
 
-  const handleLogin = useCallback(
-    (name, value) => dispatch(login([name, value])),
-    [dispatch],
-  );
-  const handleRecover = useCallback(
-    (name, value) => dispatch(recoverAccount([name, value])),
-    [dispatch],
-  );
+  function handleLoginSubmit(e){
+     e.preventDefault();
+     const form = new FormData(e.target)
+     dispatch(LoginAPI({
+      email : form.get("email"),
+      password : form.get("password")
+     }))
+  }
+function handleRecoverData(e) {
+  e.preventDefault();
+  const form = new FormData(e.target);
+  dispatch(RecoverAPI({
+    email: form.get("email"),
+    phoneNumber: form.get("phoneNumber"),
+  }));
+}
+
+
+
+
 
   return (
     <div className="Login-form">
@@ -46,18 +53,18 @@ export default function LoginForm() {
       />
       {!state.hasForgetPassword ? (
         <>
-          <div className="Login-inputs inputs">
-            {LoginInputs.map((input) => (
-              <div style={{ width: "100%" }} key={input.id}>
-                <Inputs
-                  placeholder={input.placeholder}
-                  type={input.type}
-                  onCommit={handleLogin}
-                  name={input.name}
-                />
-              </div>
-            ))}
-          </div>
+          <form onSubmit={handleLoginSubmit}>
+            <div className="Login-inputs inputs">
+              {LoginInputs.map((input) => (
+                <div style={{ width: "100%" }} key={input.id}>
+                  <Inputs
+                    placeholder={input.placeholder}
+                    type={input.type}
+                    name={input.name}
+                  />
+                </div>
+              ))}
+            </div>
           <div className="checkbox">
             <span style={{ display: "flex", alignItems: "center", gap: "2px" }}>
               <Checkbox
@@ -86,6 +93,7 @@ export default function LoginForm() {
             </p>
           </div>
           <RegisterButton>Login</RegisterButton>
+            </form>
           <Divider
             sx={{
               color: "#C9A24C",
@@ -106,7 +114,7 @@ export default function LoginForm() {
               alignItems: "center",
             }}
           >
-            <Button
+            <Button type="button"
               style={{
                 color: "#C9A24C",
                 textTransform: "none",
@@ -118,7 +126,7 @@ export default function LoginForm() {
             >
               Google
             </Button>
-            <Button
+            <Button type="button"
               style={{
                 color: "#C9A24C",
                 textTransform: "none",
@@ -134,6 +142,7 @@ export default function LoginForm() {
         </>
       ) : (
         <>
+        <form onSubmit={handleRecoverData}>
           <div className="Login-inputs inputs">
             {ForgetPasswordInputs.map((input) => (
               <div style={{ width: "100%" }} key={input.id}>
@@ -141,12 +150,12 @@ export default function LoginForm() {
                   placeholder={input.placeholder}
                   type={input.type}
                   name={input.name}
-                  onCommit={handleRecover}
                 />
               </div>
             ))}
-            <RegisterButton>Send Email</RegisterButton>
-            <Button
+            <RegisterButton >Send Email</RegisterButton>
+
+            <Button type="button"
               onClick={() => dispatch(forgetPassword())}
               style={{
                 color: "#C9A24C",
@@ -160,6 +169,7 @@ export default function LoginForm() {
               Back
             </Button>
           </div>
+          </form>
         </>
       )}
     </div>

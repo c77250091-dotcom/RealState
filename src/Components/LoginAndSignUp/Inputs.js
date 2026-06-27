@@ -3,33 +3,18 @@ import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import { useState, useRef, useCallback } from "react";
+import { useState } from "react";
 
-export default function Inputs({ name, placeholder, type, onCommit }) {
+export default function Inputs({ name, placeholder, type }) {
   const [showPassword, setShowPassword] = useState(false);
-  const [value, setValue] = useState("");
-  const debounceRef = useRef(null);
   const isPassword = type === "password";
-
-  const handleChange = useCallback(
-    (e) => {
-      const val = e.target.value;
-      setValue(val);
-      clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        onCommit(name, val);
-      }, 300);
-    },
-    [name, onCommit],
-  );
 
   return (
     <TextField
       style={{ width: "100%" }}
       id={name}
+      name={name}
       label={placeholder}
-      value={value}
-      onChange={handleChange}
       variant="outlined"
       size="small"
       type={isPassword && showPassword ? "text" : type}

@@ -1,4 +1,3 @@
-import {  useCallback } from "react";
 import Container from "@mui/material/Container";
 import Stack from "@mui/material/Stack";
 import SearchIcon from "@mui/icons-material/Search";
@@ -8,7 +7,7 @@ import Checkbox from "@mui/material/Checkbox";
 import RegisterButton from "./RegisterButton";
 import Header from "./Header";
 import { useSelector, useDispatch } from "react-redux";
-import { signUp , Buyer } from "../../Slices/RegisterSlice";
+import { Buyer, SignUpAPI , agreeToTerms } from "../../Slices/RegisterSlice";
 const seller = [
   {
     id: 1,
@@ -107,14 +106,37 @@ const buyer = [
 ];
 
 export default function SignUpForm() {
-  const state = useSelector((state) => state.registerData)
+  const state = useSelector((state) => state.registerData);
   const dispatch = useDispatch();
-  const activeInputs = state.Buyer  ? buyer : seller;
-  const handleSignUp = useCallback(
-    (name, value) =>
-      dispatch(signUp([name, value,])),
-    [ dispatch],
-  );
+  const activeInputs = state.Buyer ? buyer : seller;
+
+function handleSignUP(e) {
+  e.preventDefault();
+  if (!state.agreeToTerms) return;
+
+  const form = new FormData(e.target);
+  const data = state.Buyer
+    ? {
+        firstName: form.get("firstName"),
+        secondName: form.get("secondName"),
+        email: form.get("email"),
+        phoneNumber: form.get("phoneNumber"),
+        password: form.get("password"),
+        confirmPassword: form.get("confirmPassword"),
+      }
+    : {
+        firstName: form.get("firstName"),
+        secondName: form.get("secondName"),
+        email: form.get("email"),
+        phoneNumber: form.get("phoneNumber"),
+        nationalId: form.get("nationalID"),
+        password: form.get("password"),
+        confirmPassword: form.get("confirmPassword"),
+      };
+
+  dispatch(SignUpAPI(data));
+}
+
   return (
     <div className="SignUp-form">
       <Header
@@ -133,10 +155,9 @@ export default function SignUpForm() {
         <Stack
           onClick={() => !state.Buyer && dispatch(Buyer())}
           style={{
-            background:
-              state.Buyer
-                ? " linear-gradient(135deg, #9c7a2e, #755615 55%, #866a1d)"
-                : "transparent",
+            background: state.Buyer
+              ? " linear-gradient(135deg, #9c7a2e, #755615 55%, #866a1d)"
+              : "transparent",
           }}
           className="Choose-your-account"
           direction="column"
@@ -148,10 +169,9 @@ export default function SignUpForm() {
         <Stack
           onClick={() => state.Buyer && dispatch(Buyer())}
           style={{
-            background:
-              !state.Buyer
-                ? " linear-gradient(135deg, #9c7a2e, #755615 55%, #866a1d)"
-                : "transparent",
+            background: !state.Buyer
+              ? " linear-gradient(135deg, #9c7a2e, #755615 55%, #866a1d)"
+              : "transparent",
           }}
           className="Choose-your-account"
           direction="column"
@@ -161,44 +181,44 @@ export default function SignUpForm() {
           <p>Seller</p>
         </Stack>
       </Container>
-
-      <div className="Sign-inputs inputs">
-        {activeInputs.map((input) => (
-          <div
+      <form onSubmit={handleSignUP}>
+        <div className="Sign-inputs inputs">
+          {activeInputs.map((input) => (
+            <div
               key={`${state.Buyer ? "buyer" : "seller"}-${input.name}`}
-            style={{
-              width: "100%",
-              gridColumn: input.fullWidth ? "span 2" : "span 1",
-            }}
-          >
-            <Inputs
-              placeholder={input.placeholder}
-              type={input.type}
-              fullWidth={input.fullWidth}
-              name={input.name}
-              onCommit={handleSignUp}
-            />
-          </div>
-        ))}
-      </div>
+              style={{
+                width: "100%",
+                gridColumn: input.fullWidth ? "span 2" : "span 1",
+              }}
+            >
+              <Inputs
+                placeholder={input.placeholder}
+                type={input.type}
+                fullWidth={input.fullWidth}
+                name={input.name}
+              />
+            </div>
+          ))}
+        </div>
 
-      <span style={{ display: "flex", alignItems: "center", gap: "2px" }}>
-        <Checkbox
-          sx={{
-            color: "#3D3526",
-            "&.Mui-checked": {
-              color: "#C9A24C",
-            },
-            "&:hover": {
-              backgroundColor: "rgba(201, 162, 76, 0.08)",
-            },
-          }}
-        />
-        <p style={{ color: "#B8AD98", fontSize: "14px" }}>
-          I Agree to the Terms and Conditions
-        </p>
-      </span>
-      <RegisterButton>Sign Up</RegisterButton>
+        <span style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+          <Checkbox onChange={() => dispatch(agreeToTerms())}
+            sx={{
+              color: "#3D3526",
+              "&.Mui-checked": {
+                color: "#C9A24C",
+              },
+              "&:hover": {
+                backgroundColor: "rgba(201, 162, 76, 0.08)",
+              },
+            }}
+          />
+          <p style={{ color: "#B8AD98", fontSize: "14px" }}>
+            I Agree to the Terms and Conditions
+          </p>
+        </span>
+        <RegisterButton>Sign Up</RegisterButton>
+      </form>
     </div>
   );
 }

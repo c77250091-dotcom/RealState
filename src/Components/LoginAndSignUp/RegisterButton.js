@@ -1,6 +1,13 @@
-export default function RegisterButton({ children  }) {
+
+import { useSelector } from "react-redux";
+
+export default function RegisterButton({ children , setReoverdata }) {
+  const isLoading = useSelector((state) => state.registerData.isLoading)
   return (
     <button
+    disabled ={isLoading}
+    onClick={setReoverdata}
+    type="submit"
       className="login-btn"
       style={{
         width: "100%",
